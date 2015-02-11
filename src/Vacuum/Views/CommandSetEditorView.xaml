@@ -1,0 +1,35 @@
+﻿<Window x:Class="Vacuum.Views.CommandSetEditorView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+        xmlns:core="https://github.com/brainling/vacuum/schemas/2015/vacuum.core"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        Title="{Binding Title}" Width="550" Height="375">
+    <Window.Resources>
+        <core:NullIsHiddenConverter x:Key="NullIsHiddenConverter"></core:NullIsHiddenConverter>
+    </Window.Resources>
+    
+    <StackPanel Orientation="Vertical">
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Button Width="24" Height="24" ToolTip="Add Command" Command="{Binding AddCommand}">
+                    <core:FontImage Glyph="{DynamicResource PlusIcon}" />
+                </Button>
+                <Button Width="24" Height="24" ToolTip="Remove Command" Command="{Binding RemoveCommand}">
+                    <core:FontImage Glyph="{DynamicResource RemoveIcon}" />
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+        <StackPanel Orientation="Horizontal">
+            <ListBox ItemsSource="{Binding Set.Commands}" DisplayMemberPath="Header" SelectedItem="{Binding SelectedCommand}"
+                 Width="175" Height="Auto" VerticalAlignment="Stretch" />
+            <avalonEdit:TextEditor x:Name="ScriptEditor" FontFamily="{DynamicResource Inconsolata}" SyntaxHighlighting="{Binding LuaHighlighting}" 
+                               FontSize="12pt" ShowLineNumbers="{Binding Options.ScriptEditor.ShowLineNumbers}"
+                               Visibility="{Binding SelectedCommand, Converter={StaticResource NullIsHiddenConverter}}">
+                <i:Interaction.Behaviors>
+                    <core:EditorSourceBinding Source="{Binding SelectedCommand.Script}" />
+                </i:Interaction.Behaviors>
+                </avalonEdit:TextEditor>
+        </StackPanel>
+    </StackPanel>
+</Window>

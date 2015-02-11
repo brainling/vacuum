@@ -1,0 +1,44 @@
+﻿<Window x:Class="Vacuum.Views.EditProfileView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:core="https://github.com/brainling/vacuum/schemas/2015/vacuum.core"
+        Title="{Binding Title}" SizeToContent="WidthAndHeight" ShowInTaskbar="False">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Vertical">
+            <TextBlock Text="Name" Foreground="White" />
+            <TextBox Text="{Binding Path=Profile.Name, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" />
+        </StackPanel>
+
+        <GroupBox Grid.Row="1" Height="275" Width="450" Header="Variables">
+            <ListView>
+                <ListView.View>
+                    <GridView>
+                        <GridView.Columns>
+                            <GridViewColumn Header="Variable" Width="100" />
+                            <GridViewColumn Header="Value" />
+                        </GridView.Columns>
+                    </GridView>
+                </ListView.View>
+                <i:Interaction.Behaviors>
+                    <core:LastColumnFill />
+                </i:Interaction.Behaviors>
+            </ListView>
+        </GroupBox>
+
+        <WrapPanel Grid.Row="2" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button IsDefault="True" Width="32" Height="32" Margin="0,0,5,0" Command="{Binding Save}" ToolTip="Save">
+                <core:FontImage Glyph="{DynamicResource CheckIcon}" Brush="Green" />
+            </Button>
+            <Button IsCancel="True" Width="32" Height="32" Command="{Binding Cancel}" ToolTip="Cancel">
+                <core:FontImage Glyph="{DynamicResource RemoveIcon}" Brush="Red" />
+            </Button>
+        </WrapPanel>
+    </Grid>
+</Window>

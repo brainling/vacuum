@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="Vacuum.Views.CommandSetPanelView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:core="https://github.com/brainling/vacuum/schemas/2015/vacuum.core">
+    <StackPanel Orientation="Vertical">
+        <ToolBarTray>
+            <ToolBar>
+                <Button Width="24" Height="24" ToolTip="Add Command Set" Command="{Binding NewCommandSet}">
+                    <core:FontImage Glyph="{DynamicResource PlusIcon}" />
+                </Button>
+                <Button Width="24" Height="24" ToolTip="Edit Command Set" Command="{Binding EditCommandSet}">
+                    <core:FontImage Glyph="{DynamicResource EditIcon}" />
+                </Button>
+                <Button Width="24" Height="24" ToolTip="Import Command Set" Command="{Binding ImportCommandSet}">
+                    <core:FontImage Glyph="{DynamicResource FileOIcon}" />
+                </Button>
+                <Button Width="24" Height="24" ToolTip="Export Command Set" Command="{Binding ExportCommandSet}">
+                    <core:FontImage Glyph="{DynamicResource CopyIcon}" />
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+        <ListView ItemsSource="{Binding CommandSets}" SelectedItem="{Binding SelectedCommandSet}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Width="32">
+                        <GridViewColumn.HeaderTemplate>
+                            <DataTemplate>
+                                <CheckBox />
+                            </DataTemplate>
+                        </GridViewColumn.HeaderTemplate>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsSelected}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Command Set" DisplayMemberBinding="{Binding Name}" />
+                </GridView>
+            </ListView.View>
+            <i:Interaction.Behaviors>
+                <core:LastColumnFill />
+            </i:Interaction.Behaviors>
+        </ListView>
+    </StackPanel>
+</UserControl>

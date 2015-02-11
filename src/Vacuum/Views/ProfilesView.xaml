@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="Vacuum.Views.ProfilesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:core="https://github.com/brainling/vacuum/schemas/2015/vacuum.core">
+    <DockPanel Margin="7,7,7,7">
+        <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="0,0,0,15">
+            <TextBlock Text="Active Profile" Margin="0,0,0,2" />
+            <ComboBox ItemsSource="{Binding ProfileService.AvailableProfiles}" SelectedItem="{Binding ActiveProfile}" />
+        </StackPanel>
+        
+        <StackPanel DockPanel.Dock="Top"  Orientation="Vertical">
+            <TextBlock Text="Profiles" Margin="0,0,0,2" />
+            <ToolBarTray>
+                <ToolBar>
+                    <Button Width="24" Height="24" Command="{Binding AddProfile}">
+                        <core:FontImage Glyph="{DynamicResource PlusIcon}" Brush="LightGreen" />
+                    </Button>
+                    <Button Width="24" Height="24" Command="{Binding EditProfile}">
+                        <core:FontImage Glyph="{DynamicResource PencilIcon}" Brush="LemonChiffon" />
+                    </Button>
+                    <Button Width="24" Height="24" Command="{Binding RemoveProfile}">
+                        <core:FontImage Glyph="{DynamicResource RemoveIcon}" Brush="LightCoral" />
+                    </Button>
+                </ToolBar>
+            </ToolBarTray>
+        </StackPanel>
+        <ListBox ItemsSource="{Binding ProfileService.AvailableProfiles}" SelectedItem="{Binding SelectedProfile}" />
+    </DockPanel>
+</UserControl>

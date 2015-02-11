@@ -1,0 +1,21 @@
+﻿<Window x:Class="Vacuum.Views.EditCommandView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:core="https://github.com/brainling/vacuum/schemas/2015/vacuum.core"
+        Title="{Binding Title}" Height="300" Width="300" ShowInTaskbar="False" WindowStartupLocation="CenterOwner">
+    <StackPanel Orientation="Vertical">
+        <GroupBox Header="Phrases">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Vertical">
+                    <Button Width="24" Height="24" ToolTip="Add Phrase(s)" Command="{Binding AddPhrase}">
+                        <core:FontImage Glyph="{DynamicResource PlusIcon}" />
+                    </Button>
+                    <Button Width="24" Height="24" ToolTip="Remove Phrase">
+                        <core:FontImage Glyph="{DynamicResource RemoveIcon}" />
+                    </Button>
+                </StackPanel>
+                <ListBox ItemsSource="{Binding Command.Phrases}"></ListBox>
+            </DockPanel>            
+        </GroupBox>
+    </StackPanel>
+</Window>
