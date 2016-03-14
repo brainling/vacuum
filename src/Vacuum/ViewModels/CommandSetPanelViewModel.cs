@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -38,16 +38,18 @@ using Microsoft.Win32;
 using Vacuum.Core;
 using Vacuum.Core.Commands;
 using Vacuum.Core.Profiles;
+using Vacuum.Core.Storage;
 using Vacuum.Views;
 
 namespace Vacuum.ViewModels {
     public class CommandSetSelection : BindableBase {
         private Profile _profile;
-        private readonly string _commandSet;
         private readonly IProfileService _profileService;
 
-        public CommandSetSelection (string commandSet, Profile profile, IProfileService profileService) {
-            _commandSet = commandSet;
+        public CommandSetSelection (DocumentHeader commandSet, Profile profile, IProfileService profileService) {
+            Id = commandSet.Id;
+            Name = commandSet.Name;
+
             _profile = profile;
             _profileService = profileService;
 
@@ -65,23 +67,22 @@ namespace Vacuum.ViewModels {
             set { SetProperty (ref _profile, value); }
         }
 
-        public string Name {
-            get { return _commandSet; }
-        }
+        public string Id { get; }
+        public string Name { get; }
 
         public bool IsSelected {
-            get { return _profile.CommandSets.ContainsKey (_commandSet); }
+            get { return _profile.CommandSets.ContainsKey (Name); }
             set {
-                var contains = _profile.CommandSets.ContainsKey (_commandSet);
+                var contains = _profile.CommandSets.ContainsKey (Name);
                 if ((contains && value) || (!contains && !value)) {
                     return;
                 }
 
                 if (value) {
-                    _profile.CommandSets.Add (_commandSet, true);
+                    _profile.CommandSets.Add (Name, true);
                 }
                 else {
-                    _profile.CommandSets.Remove (_commandSet);
+                    _profile.CommandSets.Remove (Name);
                 }
 
                 _profileService.Save (_profile);
@@ -97,10 +98,6 @@ namespace Vacuum.ViewModels {
     }
 
     public class CommandSetPanelViewModel : PropertyStateBase, ICommandSetPanelViewModel {
-        private DelegateCommand _editCommandSet;
-        private DelegateCommand _exportCommandSet;
-        private DelegateCommand _importCommandSet;
-        private DelegateCommand _newCommandSet;
         private CommandSetSelection _selectedCommandSet;
         private readonly ICommandService _commandService;
         private readonly List<CommandSetSelection> _commandSets = new List<CommandSetSelection> ();
@@ -114,37 +111,19 @@ namespace Vacuum.ViewModels {
             _commandService.AvailableCommandSets.ToList ().ForEach (cs => { _commandSets.Add (new CommandSetSelection (cs, _profileService.ActiveProfile, _profileService)); });
 
             SelectedCommandSet = CommandSets.FirstOrDefault ();
-
-            WhenStateUpdated (() => SelectedCommandSet, () => {
-                _editCommandSet.RaiseCanExecuteChanged ();
-                _exportCommandSet.RaiseCanExecuteChanged ();
-            });
         }
 
-        public ICommand ImportCommandSet {
-            get { return _importCommandSet ?? (_importCommandSet = new DelegateCommand (ExecuteImportCommandSet)); }
-        }
-
-        public ICommand ExportCommandSet {
-            get { return _exportCommandSet ?? (_exportCommandSet = new DelegateCommand (ExecuteExportCommandSet, CanExecuteExportCommandSet)); }
-        }
+        public ICommand ImportCommandSet => GetCommand ("Import", ExecuteImportCommandSet);
+        public ICommand ExportCommandSet => GetCommand ("Export", ExecuteExportCommandSet, CanExecuteExportCommandSet);
+        public ICommand NewCommandSet => GetCommand("New", ExecuteNewCommandSet, CanExecuteExportCommandSet);
+        public ICommand EditCommandSet => GetCommand ("Edit", ExecuteEditCommandSet, CanExecuteEditCommandSet);
 
         public CommandSetSelection SelectedCommandSet {
             get { return _selectedCommandSet; }
             set { SetProperty (ref _selectedCommandSet, value); }
-        }
+        }        
 
-        public ICommand NewCommandSet {
-            get { return _newCommandSet ?? (_newCommandSet = new DelegateCommand (ExecuteNewCommandSetCommand)); }
-        }
-
-        public IEnumerable<CommandSetSelection> CommandSets {
-            get { return _commandSets; }
-        }
-
-        public ICommand EditCommandSet {
-            get { return _editCommandSet ?? (_editCommandSet = new DelegateCommand (ExecuteEditCommandSetCommand, CanExecuteEditCommandSet)); }
-        }
+        public IEnumerable<CommandSetSelection> CommandSets => _commandSets;        
 
         private bool CanExecuteExportCommandSet () {
             return SelectedCommandSet != null;
@@ -154,11 +133,11 @@ namespace Vacuum.ViewModels {
             return SelectedCommandSet != null;
         }
 
-        private void ExecuteNewCommandSetCommand () {
+        private void ExecuteNewCommandSet () {
         }
 
-        private void ExecuteEditCommandSetCommand () {
-            var set = _commandService.Load (SelectedCommandSet.Name);
+        private void ExecuteEditCommandSet () {
+            var set = _commandService.Load (SelectedCommandSet.Id);
             var editor = ((VoiceApplication) Application.Current).Container.GetInstance<CommandSet, CommandSetEditorView> (set);
             editor.Owner = Application.Current.MainWindow;
             editor.Show ();

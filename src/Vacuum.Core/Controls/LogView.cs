@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@
 
 #endregion
 
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -38,5 +39,10 @@ namespace Vacuum.Core.Controls {
         }
 
         #endregion
+
+        protected override void OnInitialized (EventArgs e) {
+            base.OnInitialized (e);
+            var f = FontFamily;
+        }
     }
 }

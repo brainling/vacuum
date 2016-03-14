@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -30,13 +30,19 @@ using System.Windows;
 using Vacuum.ViewModels;
 
 namespace Vacuum.Views {
-    /// <summary>
-    /// Interaction logic for EditCommandView.xaml
-    /// </summary>
-    public partial class EditCommandView : Window {
+    public interface IEditCommandView {
+        void SetOwner (ICommandSetEditorView owner);
+        bool? ShowDialog ();
+    }
+
+    public partial class EditCommandView : Window, IEditCommandView {
         public EditCommandView (IEditCommandViewModel vm) {
             DataContext = vm;
             InitializeComponent ();
+        }
+
+        public void SetOwner (ICommandSetEditorView owner) {
+            Owner = (Window) owner;
         }
     }
 }

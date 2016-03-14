@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -52,24 +52,19 @@ namespace Vacuum.ViewModels {
         public EditProfileViewModel (Profile profile, IProfileService profileService) {
             IsNew = profile == null;
             Profile = profile ?? new Profile ();
-            Title = IsNew ? "New Profile" : String.Format ("Edit Profile - {0}", profile.Name);
+            Title = IsNew ? "New Profile" : $"Edit Profile - {profile?.Name ?? "Unknown"}";
 
             _profileService = profileService;
         }
 
         public IEditProfileView View { get; set; }
 
-        public bool IsNew { get; private set; }
-        public Profile Profile { get; private set; }
-        public string Title { get; private set; }
+        public bool IsNew { get; }
+        public Profile Profile { get; }
+        public string Title { get; }
 
-        public ICommand Save {
-            get { return GetCommand ("Save", ExecuteSave, CanExecuteSave); }
-        }
-
-        public ICommand Cancel {
-            get { return GetCommand ("Cancel", ExecuteCancel); }
-        }
+        public ICommand Save => GetCommand ("Save", ExecuteSave, CanExecuteSave);
+        public ICommand Cancel => GetCommand ("Cancel", ExecuteCancel);
 
         private void ExecuteSave () {
             _profileService.Save (Profile);

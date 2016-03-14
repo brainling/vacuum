@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -80,7 +80,7 @@ namespace Vacuum.ViewModels {
             _flyoutService = flyoutService;
 
             ActiveProfile = _profileService.ActiveProfile.Name;
-            Title = String.Format ("Vacuum - {0}", ActiveProfile);
+            Title = $"Vacuum - {ActiveProfile}";
 
             eventAggregator.GetEvent<ActiveProfileChanged> ().Subscribe (p => {
                 ActiveProfile = p.Name;
@@ -88,33 +88,22 @@ namespace Vacuum.ViewModels {
 
             WhenStateUpdated (() => ActiveProfile, () => {
                 _profileService.ActivateProfile (ActiveProfile);
-                Title = String.Format ("Vacuum - {0}", ActiveProfile);
+                Title = $"Vacuum - {ActiveProfile}";
             });
 
             speechService.Start ();
         }
 
-        public IProfileService ProfileService {
-            get { return _profileService; }
-        }
+        public IProfileService ProfileService => _profileService;
+        public IMainWindowView View { get; set; }
 
-        public ICommand EditProfiles {
-            get { return GetCommand ("EditProfiles", ExecuteEditProfiles); }
-        }
-
-        public ICommand Options {
-            get { return GetCommand ("Options", ExecuteOptions); }
-        }
+        public ICommand EditProfiles => GetCommand ("EditProfiles", ExecuteEditProfiles);
+        public ICommand Options => GetCommand ("Options", ExecuteOptions);
+        public ICommand Exit => GetCommand("Exit", ExecuteExit);
 
         public string ActiveProfile {
             get { return _activeProfile; }
             set { SetProperty (ref _activeProfile, value); }
-        }
-
-        public IMainWindowView View { get; set; }
-
-        public ICommand Exit {
-            get { return GetCommand ("Exit", ExecuteExit); }
         }
 
         public string Title {

@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 
 namespace Vacuum.Core.Storage {
     public interface IDocumentObject {
+        string Id { get; set; }
         string Name { get; set; }
     }
 }

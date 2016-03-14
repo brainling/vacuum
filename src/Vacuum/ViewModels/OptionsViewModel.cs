@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -59,9 +59,7 @@ namespace Vacuum.ViewModels {
 
             Options.PropertyChanged += (o, e) => OptionsChanged ();
             Options.ScriptEditor.PropertyChanged += (o, e) => OptionsChanged ();
-        }
-
-        private bool IsDirty { get; set; }
+        }        
 
         void IFlyoutViewModel.Closing () {
             _optionsService.Update (Options);
@@ -70,9 +68,10 @@ namespace Vacuum.ViewModels {
         void IFlyoutViewModel.Closed () {
         }
 
+        private bool IsDirty { get; set; }
         public Options Options { get; set; }
-        public IEnumerable<RecognizerInfo> Engines { get; private set; }
-        public IEnumerable<InstalledVoice> Voices { get; private set; }
+        public IEnumerable<RecognizerInfo> Engines { get; }
+        public IEnumerable<InstalledVoice> Voices { get; }
         public IOptionsView View { get; set; }
 
         private void OptionsChanged () {

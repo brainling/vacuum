@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Newtonsoft.Json;
+using Vacuum.Core.Storage;
 
 namespace Vacuum.Core.Profiles {
-    public class Profile : PropertyStateBase, IDataErrorInfo {
+    public class Profile : PropertyStateBase, IDataErrorInfo, IDocumentObject {
         private string _name;
         private string _originalName;
 
@@ -40,7 +41,8 @@ namespace Vacuum.Core.Profiles {
             CommandSets = new Dictionary<string, bool> ();
         }
 
-        [JsonIgnore]
+        public string Id { get; set; }
+
         public string Name {
             get { return _name; }
             set {
@@ -51,13 +53,13 @@ namespace Vacuum.Core.Profiles {
             }
         }
 
-        [JsonProperty ("commandSets")]
         public Dictionary<string, bool> CommandSets { get; private set; }
 
         public override string ToString () {
             return Name;
         }
 
+        [JsonIgnore]
         public string this [string columnName] {
             get {
                 if (columnName != "Name") {
@@ -76,8 +78,6 @@ namespace Vacuum.Core.Profiles {
         }
 
         [JsonIgnore]
-        public string Error {
-            get { return null; }
-        }
+        public string Error => null;
     }
 }

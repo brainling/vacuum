@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -28,18 +28,16 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Newtonsoft.Json;
+using Vacuum.Core.Storage;
 
 namespace Vacuum.Core.Commands {
-    public class CommandSet {
+    public class CommandSet : IDocumentObject {
         public CommandSet () {
             Commands = new ObservableCollection<Command> ();
         }
 
-        [JsonIgnore]
+        public string Id { get; set; }
         public string Name { get; set; }
-
-        [JsonProperty("commands")]
         public IList<Command> Commands { get; private set; }
     }
 }

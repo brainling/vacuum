@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -44,21 +44,13 @@ namespace Vacuum.ViewModels {
             Title = IsNew ? "Add New Command" : "Edit Command";
         }
 
-        public bool IsNew { get; private set; }
-        public Command Command { get; private set; }
+        public bool IsNew { get; }
+        public Command Command { get; }
         public string Title { get; private set; }
 
-        public ICommand Save {
-            get { return GetCommand ("Save", ExecuteSave, CanExecuteSave); }
-        }
-
-        public ICommand Cancel {
-            get { return GetCommand ("Cancel", ExecuteCancel); }
-        }
-
-        public ICommand AddPhrase {
-            get { return GetCommand ("AddPhrase", ExecuteAddPhrase); }
-        }
+        public ICommand Save => GetCommand ("Save", ExecuteSave, CanExecuteSave);
+        public ICommand Cancel => GetCommand ("Cancel", ExecuteCancel);
+        public ICommand AddPhrase => GetCommand ("AddPhrase", ExecuteAddPhrase);
 
         private void ExecuteSave () {
         }

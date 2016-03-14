@@ -3,6 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:core="https://github.com/brainling/vacuum/schemas/2015/vacuum.core">
     <DockPanel>
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <ToggleButton Width="24" Height="24" IsChecked="{Binding SpeechService.IsActive, Mode=OneWay}" 
+                              Command="{Binding ToggleSpeech}">
+                    <core:FontImage Glyph="{DynamicResource MicrophoneIcon}"></core:FontImage>
+                </ToggleButton>
+            </ToolBar>
+        </ToolBarTray>
         <ProgressBar Height="12" DockPanel.Dock="Bottom" Width="Auto" Maximum="100" Minimum="0"
                      Value="{Binding SpeechService.IncomingVolume, Mode=OneWay}" />
         <core:LogView ItemsSource="{Binding SpeechService.Messages}" />

@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -61,21 +61,10 @@ namespace Vacuum.ViewModels {
             set { SetProperty (ref _selectedProfile, value); }
         }
 
-        public IProfileService ProfileService {
-            get { return _profileService; }
-        }
-
-        public ICommand EditProfile {
-            get { return GetCommand ("EditProfile", ExecuteEditProfile, CanExecuteEditProfile); }
-        }
-
-        public ICommand AddProfile {
-            get { return GetCommand ("AddProfile", ExecuteAddProfile); }
-        }
-
-        public ICommand RemoveProfile {
-            get { return GetCommand ("RemoveProfile", ExecuteRemoveProfile, CanExecuteRemoveProfile); }
-        }
+        public IProfileService ProfileService => _profileService;
+        public ICommand EditProfile => GetCommand ("Edit", ExecuteEditProfile, CanExecuteEditProfile);
+        public ICommand AddProfile => GetCommand ("Add", ExecuteAddProfile);
+        public ICommand RemoveProfile => GetCommand ("Remove", ExecuteRemoveProfile, CanExecuteRemoveProfile);
 
         public string ActiveProfile {
             get { return _profileService.ActiveProfile.Name; }
@@ -98,14 +87,14 @@ namespace Vacuum.ViewModels {
         }
 
         private void ExecuteRemoveProfile () {
-            var result = MessageBox.Show (String.Format ("Are you sure you want to remove the profile '{0}'", SelectedProfile), "Remove Profile",
+            var result = MessageBox.Show ($"Are you sure you want to remove the profile '{SelectedProfile}'", "Remove Profile",
                 MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
             if (result != MessageBoxResult.Yes) {
                 return;
             }
 
             _profileService.Remove (SelectedProfile);
-            SelectedProfile = _profileService.AvailableProfiles.FirstOrDefault ();
+            SelectedProfile = _profileService.AvailableProfiles.FirstOrDefault ()?.Id;
         }
 
         private bool CanExecuteRemoveProfile () {

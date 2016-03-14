@@ -5,7 +5,7 @@
     <DockPanel Margin="7,7,7,7">
         <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="0,0,0,15">
             <TextBlock Text="Active Profile" Margin="0,0,0,2" />
-            <ComboBox ItemsSource="{Binding ProfileService.AvailableProfiles}" SelectedItem="{Binding ActiveProfile}" />
+            <ComboBox ItemsSource="{Binding ProfileService.AvailableProfiles}" SelectedItem="{Binding ActiveProfile}" DisplayMemberPath="Name" SelectedValuePath="Name" />
         </StackPanel>
         
         <StackPanel DockPanel.Dock="Top"  Orientation="Vertical">
@@ -24,6 +24,6 @@
                 </ToolBar>
             </ToolBarTray>
         </StackPanel>
-        <ListBox ItemsSource="{Binding ProfileService.AvailableProfiles}" SelectedItem="{Binding SelectedProfile}" />
+        <ListBox ItemsSource="{Binding ProfileService.AvailableProfiles}" SelectedItem="{Binding SelectedProfile}" DisplayMemberPath="Name" SelectedValuePath="Id" />
     </DockPanel>
 </UserControl>

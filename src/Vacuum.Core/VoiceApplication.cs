@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,9 @@ namespace Vacuum.Core {
         private readonly IServiceContainer _container;
 
         protected VoiceApplication () {
-            _container = new ServiceContainer ();
-            ((ServiceContainer) _container).EnableAnnotatedPropertyInjection ();
+            var container = new ServiceContainer ();
+            container.EnableAnnotatedPropertyInjection ();
+            _container = container;
             
             _container.RegisterAssembly (typeof (VoiceApplication).Assembly);
             _container.RegisterInstance (_container);

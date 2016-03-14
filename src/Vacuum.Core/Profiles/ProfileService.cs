@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ using Vacuum.Core.Storage;
 namespace Vacuum.Core.Profiles {
     public interface IProfileService {
         Profile ActiveProfile { get; set; }
-        IEnumerable<string> AvailableProfiles { get; }
+        IEnumerable<DocumentHeader> AvailableProfiles { get; }
         bool ProfileExists (string name);
         void Save (Profile profile);
         Profile Load (string name);
@@ -46,14 +46,14 @@ namespace Vacuum.Core.Profiles {
 
     internal class ProfileService : PropertyStateBase, IProfileService {
         private Profile _activeProfile;
-        private readonly ObservableCollection<string> _availableProfiles;
+        private readonly ObservableCollection<DocumentHeader> _availableProfiles;
         private readonly IDispatchHandler _dispatcher;
         private readonly IStorageService _storageService;
 
         public ProfileService (IStorageService storageService, IDispatchHandler dispatcher, IEventAggregator eventAggregator) {
             _storageService = storageService;
             _dispatcher = dispatcher;
-            _availableProfiles = new ObservableCollection<string> (storageService.LoadDocumentNames ("Profiles"));
+            _availableProfiles = new ObservableCollection<DocumentHeader> (storageService.LoadHeaders<Profile>());
             if (!AvailableProfiles.Any ()) {
                 var profile = new Profile {
                     Name = "Default"
@@ -63,7 +63,7 @@ namespace Vacuum.Core.Profiles {
                 ActiveProfile = profile;
             }
             else {
-                ActiveProfile = Load (AvailableProfiles.First ());
+                ActiveProfile = Load (AvailableProfiles.First ().Name);
             }
 
             WhenStateUpdated (() => ActiveProfile, () => {
@@ -78,27 +78,28 @@ namespace Vacuum.Core.Profiles {
         }
 
         public bool ProfileExists (string name) {
-            return _availableProfiles.Any (p => p.Equals (name, StringComparison.InvariantCultureIgnoreCase));
+            return _availableProfiles.Any (p => p.Name.Equals (name, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public void Save (Profile profile) {
             var isNew = !ProfileExists (profile.Name);
-            _storageService.StoreDocument ("Profiles", profile.Name, profile);
+            _storageService.Store (profile);
             if (isNew) {
-                _availableProfiles.Add (profile.Name);
+                _availableProfiles.Add (new DocumentHeader {
+                    Id = profile.Id,
+                    Name = profile.Name
+                });
             }
         }
 
-        public IEnumerable<string> AvailableProfiles {
-            get { return _availableProfiles; }
-        }
+        public IEnumerable<DocumentHeader> AvailableProfiles => _availableProfiles;
 
         public Profile Load (string name) {
             if (!ProfileExists (name)) {
                 return null;
             }
 
-            return _storageService.ReadDocument<Profile> ("Profiles", name);
+            return _storageService.Read<Profile> (GetProfileId (name));
         }
 
         public void Remove (string name) {
@@ -106,14 +107,18 @@ namespace Vacuum.Core.Profiles {
                 throw new InvalidOperationException ("Cannot remove active profile.");
             }
 
-            _storageService.RemoveDocument ("Profiles", name);
-            if (_availableProfiles.Contains (name)) {
-                _availableProfiles.Remove (name);
-            }
+            _storageService.Remove<Profile> (GetProfileId (name));
+
         }
 
         public void ActivateProfile (string name) {
             ActiveProfile = Load (name);
+        }
+
+        private string GetProfileId (string name) {
+            return _availableProfiles
+                .FirstOrDefault (p => p.Name.Equals (name, StringComparison.InvariantCultureIgnoreCase))
+                ?.Id;
         }
 
         private void UpdateProfileBindings () {

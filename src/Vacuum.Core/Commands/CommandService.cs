@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -36,19 +36,19 @@ using Vacuum.Core.Storage;
 
 namespace Vacuum.Core.Commands {
     public interface ICommandService {
-        IEnumerable<string> AvailableCommandSets { get; }
+        IEnumerable<DocumentHeader> AvailableCommandSets { get; }
         bool CommandSetExists (string name);
         void Save (CommandSet set);
         void Export (string name, string exportPath);
-        CommandSet Load (string name);
+        CommandSet Load (string id);
     }
 
     internal class CommandService : PropertyStateBase, ICommandService {
-        private Lua _lua;
-        private readonly ObservableCollection<string> _availableCommandSets;
+        private readonly ObservableCollection<DocumentHeader> _availableCommandSets;
         private readonly IDispatchHandler _dispatcher;
         private readonly IEventAggregator _eventAggregator;
         private readonly IStorageService _storageService;
+        private Lua _lua;
 
         public CommandService (IStorageService storageService, IDispatchHandler dispatcher, IEventAggregator eventAggregator) {
             _storageService = storageService;
@@ -56,7 +56,7 @@ namespace Vacuum.Core.Commands {
             _eventAggregator = eventAggregator;
             _lua = new Lua ();
 
-            _availableCommandSets = new ObservableCollection<string> (storageService.LoadDocumentNames ("CommandSets"));
+            _availableCommandSets = new ObservableCollection<DocumentHeader> (storageService.LoadHeaders<CommandSet> ());
             if (!AvailableCommandSets.Any ()) {
                 var set = new CommandSet {
                     Name = "My Commands"
@@ -67,19 +67,22 @@ namespace Vacuum.Core.Commands {
         }
 
         public bool CommandSetExists (string name) {
-            return _availableCommandSets.Any (c => c.Equals (name, StringComparison.InvariantCultureIgnoreCase));
+            return _availableCommandSets.Any (c => c.Name.Equals (name, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public void Save (CommandSet set) {
             var isNew = !CommandSetExists (set.Name);
-            _storageService.StoreDocument ("CommandSets", set.Name, set);
+            _storageService.Store (set);
             if (isNew) {
-                _availableCommandSets.Add (set.Name);
+                _availableCommandSets.Add (new DocumentHeader {
+                    Id = set.Id,
+                    Name = set.Name
+                });
             }
         }
 
         public void Export (string name, string exportPath) {
-            var set = Load (name);
+            var set = Load (GetCommandSetId (name));
             if (set == null) {
                 return;
             }
@@ -87,12 +90,16 @@ namespace Vacuum.Core.Commands {
             //SaveTo (set, Path.ChangeExtension (exportPath, ".vaccs"));
         }
 
-        public CommandSet Load (string name) {
-            return _storageService.ReadDocument<CommandSet> ("CommandSets", name);
+        public CommandSet Load (string id) {
+            return _storageService.Read<CommandSet> (id);
         }
 
-        public IEnumerable<string> AvailableCommandSets {
-            get { return _availableCommandSets; }
+        public IEnumerable<DocumentHeader> AvailableCommandSets => _availableCommandSets;
+
+        private string GetCommandSetId (string name) {
+            return _availableCommandSets
+                .FirstOrDefault (p => p.Name.Equals (name, StringComparison.InvariantCultureIgnoreCase))
+                ?.Id;
         }
     }
 }

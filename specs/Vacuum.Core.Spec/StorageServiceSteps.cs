@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -27,56 +27,109 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using NUnit.Framework;
+using Raven.Abstractions.Extensions;
 using TechTalk.SpecFlow;
 using Vacuum.Core.Storage;
 
 namespace Vacuum.Core.Spec {
+    class TestDocument : IDocumentObject {
+        public string Id { get; set; }
+        public string Name { get; set; }
+    }
+
     [Binding]
     public class StorageServiceSteps {
         private static IStorageService _storageService;
-        private string _documentCollection;
-        private string _documentName;
+        private IEnumerable<DocumentHeader> _headers;
+        private TestDocument _lastDocument;
+
+        [AfterScenario ("storage")]
+        public static void AfterScenario () {
+            ((StorageService) _storageService).Dispose ();
+        }
 
         [AfterFeature ("storage")]
         public static void AfterFeature () {
-            ((StorageService) _storageService).Dispose ();
-
-            // Ugly hack to clean up the test db
-            var start = DateTimeOffset.UtcNow;
+            var start = DateTime.UtcNow;
             while (true) {
                 try {
-                    File.Delete (StorageService.GetDbFile ("test"));
+                    Directory.Delete (Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.ApplicationData), "Vacuum/test"), true);
                     break;
                 }
-                catch {
-                    if ((DateTimeOffset.UtcNow - start).Seconds > 30) {
-                        throw;
+                catch (Exception) {
+                    if ((DateTime.UtcNow - start).TotalSeconds > 30) {
+                        break;
                     }
+
+                    Thread.Sleep (500);
                 }
             }
         }
 
         [Given ("storage service")]
         public void GivenStorageService () {
-            _storageService = new StorageService ("test");
+            _storageService = new StorageService ("test", true);
         }
 
-        [Given (@"document '(.*)' in collection '(.*)'")]
-        public void GivenDocumentInCollection (string p0, string p1) {
-            _documentName = p0;
-            _documentCollection = p1;
+        [When (@"document headers are loaded")]
+        public void WhenDocumentHeadersAreLoaded () {
+            _headers = _storageService.LoadHeaders<TestDocument> ();
         }
 
-        [When ("document is stored")]
-        public void WhenDocumentIsStored () {
-            _storageService.StoreDocument (_documentCollection, _documentName, new Object ());
+
+        [Then (@"document '(.*)' exists")]
+        public void ThenDocumentExists (string p0) {
+            var documents = _storageService.ReadByName<TestDocument> (p0);
+            Assert.IsTrue (documents.Any ());
         }
 
-        [Then (@"document '(.*)' in collection '(.*)' exists")]
-        public void ThenDocumentInCollectionExists (string p0, string p1) {
-            Assert.NotNull (_storageService.ReadDocument<object> (p1, p0));
+        [Given (@"document '(.*)' has been created")]
+        public void GivenDocumentAlreadyExists (string p0) {
+            _lastDocument = new TestDocument {
+                Name = p0
+            };
+            _storageService.Store (_lastDocument);
+        }
+
+        [When (@"document '(.*)' is deleted")]
+        public void WhenDocumentIsDeleted (string p0) {
+            _storageService.RemoveByName<TestDocument> (p0);
+        }
+
+        [Then (@"document '(.*)' does not exist")]
+        public void ThenDocumentDoesNotExist (string p0) {
+            var documents = _storageService.ReadByName<TestDocument> (p0);
+            Assert.IsFalse (documents.Any ());
+        }
+
+        [Then (@"document with id exists")]
+        public void ThenDocumentWithIdExists () {
+            Assert.IsNotNull (_storageService.Read<TestDocument> (_lastDocument.Id));
+        }
+
+        [When (@"document is deleted by id")]
+        public void WhenDocumentIsDeletedById () {
+            _storageService.Remove<TestDocument> (_lastDocument.Id);
+        }
+
+        [Then (@"document with id does not exist")]
+        public void ThenDocumentWithIdDoesNotExist () {
+            Assert.IsNull (_storageService.Read<TestDocument> (_lastDocument.Id));
+        }
+
+        [Then (@"headers (.*)")]
+        public void ThenDocumentsExist (string[] tests) {
+            tests.ForEach (t => Assert.IsTrue (_headers.Any (h => String.Equals (h.Name, t, StringComparison.InvariantCultureIgnoreCase))));
+        }
+
+        [StepArgumentTransformation (@"contains '(.*)'")]
+        public string[] CommaSeperatedList (string list) {
+            return list.Split (',').Select (s => s.Trim ()).ToArray ();
         }
     }
 }

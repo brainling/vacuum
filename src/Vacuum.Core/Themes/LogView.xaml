@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:core="clr-namespace:Vacuum.Core.Controls">
     <Style TargetType="{x:Type core:LogView}">
-        <Setter Property="FontFamily" Value="{DynamicResource Inconsolata}" />
+        <Setter Property="FontFamily" Value="/Vacuum.Core;component/Fonts/#Inconsolata" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontStyle" Value="Normal" />

@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ namespace Vacuum.ViewModels {
         private CommandSet _set;
         private ICommandSetEditorView _view;
         private readonly IEventAggregator _eventAggregator;
-        private IServiceContainer _container;
+        private readonly IServiceContainer _container;
 
         public CommandSetEditorViewModel (CommandSet set, IOptionsService optionsService, IEventAggregator eventAggregator, IServiceContainer container) {
             LuaHighlighting = LoadHighlighting ();
@@ -70,7 +70,7 @@ namespace Vacuum.ViewModels {
             Set = set;
             SelectedCommand = set.Commands.FirstOrDefault ();
             Options = optionsService.Get ();
-            Title = String.Format ("Editing Command Set - {0}", set.Name);
+            Title = $"Editing Command Set - {set.Name}";
 
             _eventAggregator = eventAggregator;
             eventAggregator.GetEvent<OptionsUpdate> ().Subscribe (OptionsUpdated);
@@ -90,35 +90,30 @@ namespace Vacuum.ViewModels {
             set { SetProperty (ref _set, value); }
         }
 
-        public ICommand AddCommand {
-            get { return GetCommand ("Add", ExecuteAddCommand); }
-        }
-
-        public ICommand RemoveCommand {
-            get { return GetCommand ("Remove", ExecuteRemoveCommand, CanExecuteRemoveCommand); }
-        }
+        public ICommand AddCommand => GetCommand ("Add", ExecuteAddCommand);
+        public ICommand RemoveCommand => GetCommand ("Remove", ExecuteRemoveCommand, CanExecuteRemoveCommand);
 
         public Options Options {
             get { return _options; }
             set { SetProperty (ref _options, value); }
         }
 
-        public string Title { get; private set; }
+        public string Title { get; }
 
         public ICommandSetEditorView View {
             get { return _view; }
             set { SetProperty (ref _view, value); }
         }
 
-        public IHighlightingDefinition LuaHighlighting { get; private set; }
+        public IHighlightingDefinition LuaHighlighting { get; }
 
         public void Dispose () {
             _eventAggregator.GetEvent<OptionsUpdate> ().Unsubscribe (OptionsUpdated);
         }
 
         private void ExecuteAddCommand () {
-            var editor = _container.GetInstance<Command, EditCommandView> (null);
-            editor.Owner = (Window) View;
+            var editor = _container.GetInstance<Command, IEditCommandView> (null);
+            editor.SetOwner (View);
             editor.ShowDialog ();
         }
 
@@ -135,11 +130,7 @@ namespace Vacuum.ViewModels {
         }
 
         private void SetTextEditorOptions () {
-            if (View == null) {
-                return;
-            }
-
-            View.SetEditorOptions (Options.ScriptEditor);
+            View?.SetEditorOptions (Options.ScriptEditor);
         }
 
         private IHighlightingDefinition LoadHighlighting () {

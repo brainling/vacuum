@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -28,87 +28,130 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using Newtonsoft.Json;
+using Raven.Abstractions.Extensions;
+using Raven.Client;
+using Raven.Client.Document;
+using Raven.Client.Embedded;
+using Raven.Client.Indexes;
 
 namespace Vacuum.Core.Storage {
+    public class DocumentHeader {
+        public string Id { get; set; }
+        public string Name { get; set; }
+    }
+
     public interface IStorageService {
-        IEnumerable<string> LoadDocumentNames (string collection);
-        void StoreDocument<TDocument> (string collection, string name, TDocument document);
-        TDocument ReadDocument<TDocument> (string collection, string name);
-        void RemoveDocument (string collection, string name);
+        IEnumerable<DocumentHeader> LoadHeaders<TDocument> ()
+            where TDocument : IDocumentObject;
+
+        void Store<TDocument> (TDocument document)
+            where TDocument : IDocumentObject;
+
+        TDocument Read<TDocument> (string id)
+            where TDocument : IDocumentObject;
+
+        IEnumerable<TDocument> ReadByName<TDocument> (string name)
+            where TDocument : IDocumentObject;
+
+        void Remove<TDocument> (string id)
+            where TDocument : IDocumentObject;
+
+        void RemoveByName<TDocument> (string name)
+            where TDocument : IDocumentObject;
     }
 
     internal class StorageService : IStorageService, IDisposable {
-        private static readonly Action<object, string> Nop = (o, s) => { };
-        private readonly StorageContext _context;
-        private readonly Dictionary<Type, Action<object, string>> _nameSetterCache = new Dictionary<Type, Action<object, string>> ();
+        private readonly List<Type> _indexesChecked = new List<Type> ();
+        private readonly EmbeddableDocumentStore _store;
 
         public StorageService ()
             : this ("storage") {
         }
 
-        internal StorageService (string dbName) {
-            var dbFile = GetDbFile (dbName);
-            if (!File.Exists (dbFile)) {
-                CreateStorageDatabase (dbFile);
+        internal StorageService (string dbName, bool testMode = false) {
+            if (!testMode) {
+                _store = new EmbeddableDocumentStore {
+                    DataDirectory = EnsureFolder (dbName)
+                };
+            }
+            else {
+                _store = new EmbeddableDocumentStore {
+                    DataDirectory = EnsureFolder (dbName),
+                    Conventions = {
+                        DefaultQueryingConsistency = ConsistencyOptions.AlwaysWaitForNonStaleResultsAsOfLastWrite
+                    }
+                };
             }
 
-            _context = new StorageContext (String.Format ("Data Source={0}", dbFile));
+            _store.Initialize ();
         }
+
+        internal IDocumentStore DocumentStore => _store;
 
         public void Dispose () {
-            _context.Dispose ();
+            _store.Dispose ();
         }
 
-        public IEnumerable<string> LoadDocumentNames (string collection) {
-            return _context.Database.SqlQuery<string> ("SELECT Name FROM StorageDocuments WHERE Collection = @p0", collection).ToList ();
-        }
+        public IEnumerable<DocumentHeader> LoadHeaders<TDocument> ()
+            where TDocument : IDocumentObject {
+            CheckIndexes<TDocument> ();
 
-        public TDocument ReadDocument<TDocument> (string collection, string name) {
-            var storageDocument = _context.Documents.FirstOrDefault (d => d.Collection == collection && d.Name == name);
-            if (storageDocument == null) {
-                return default(TDocument);
+            using (var session = _store.OpenSession ()) {
+                return session.Query<TDocument> ($"{typeof(TDocument).Name}/Headers")                            
+                              .Select (x => new DocumentHeader {
+                                  Id = x.Id,
+                                  Name = x.Name
+                              }).ToList ();
             }
-
-            var document = JsonConvert.DeserializeObject<TDocument> (storageDocument.Document);
-            if (!_nameSetterCache.ContainsKey (typeof (TDocument))) {
-                _nameSetterCache[typeof (TDocument)] = GetNameSetter (typeof (TDocument));
-            }
-
-            _nameSetterCache[typeof (TDocument)] (document, storageDocument.Name);
-            return document;
         }
 
-        public void StoreDocument<TDocument> (string collection, string name, TDocument document) {
-            var storageDocument = _context.Documents.FirstOrDefault (d => d.Collection == collection && d.Name == name);
-            if (storageDocument == null) {
-                storageDocument = new StorageDocument {
-                    Collection = collection,
-                    Name = name
-                };
-                _context.Documents.Add (storageDocument);
+        public TDocument Read<TDocument> (string id)
+            where TDocument : IDocumentObject {
+            using (var session = _store.OpenSession ()) {
+                return session.Load<TDocument> (id);
             }
-
-            storageDocument.Document = JsonConvert.SerializeObject (document);
-            _context.SaveChanges ();
         }
 
-        public void RemoveDocument (string collection, string name) {
-            var storageDocument = _context.Documents.FirstOrDefault (d => d.Collection == collection && d.Name == name);
-            if (storageDocument == null) {
-                return;
+        public IEnumerable<TDocument> ReadByName<TDocument> (string name)
+            where TDocument : IDocumentObject {
+            using (var session = _store.OpenSession ()) {
+                return session.Query<TDocument> ().Where (d => d.Name == name).ToList ();
             }
-
-            _context.Documents.Remove (storageDocument);
-            _context.SaveChanges ();
         }
 
-        private static string EnsureFolder () {
+        public void Store<TDocument> (TDocument document)
+            where TDocument : IDocumentObject {
+            using (var session = _store.OpenSession ()) {
+                session.Store (document);
+                session.SaveChanges ();
+            }
+        }
+
+        public void Remove<TDocument> (string id)
+            where TDocument : IDocumentObject {
+            using (var session = _store.OpenSession ()) {
+                session.Delete (session.Load<TDocument> (id));
+                session.SaveChanges ();
+            }
+        }
+
+        public void RemoveByName<TDocument> (string name)
+            where TDocument : IDocumentObject {
+            using (var session = _store.OpenSession ()) {
+                session.Query<TDocument> ().Where (d => d.Name == name).ForEach (d => session.Delete (d));
+                session.SaveChanges ();
+            }
+        }
+
+        private static string EnsureFolder (string dbName) {
             var folder = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.ApplicationData), "Vacuum");
+            if (!Directory.Exists (folder)) {
+                Directory.CreateDirectory (folder);
+            }
+
+            folder = Path.Combine (folder, dbName);
             if (!Directory.Exists (folder)) {
                 Directory.CreateDirectory (folder);
             }
@@ -116,48 +159,27 @@ namespace Vacuum.Core.Storage {
             return folder;
         }
 
-        private string GetConnectionString (string dbFile) {
-            return (new SQLiteConnectionStringBuilder {
-                DataSource = dbFile,
-                Version = 3
-            }).ToString ();
-        }
-
-        private void CreateStorageDatabase (string dbFile) {
-            using (var conn = new SQLiteConnection (GetConnectionString (dbFile))) {
-                conn.Open ();
-
-                var cmd = new SQLiteCommand (@"
-CREATE TABLE StorageDocuments
-(
-    Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-    Collection TEXT NOT NULL COLLATE NOCASE, 
-    Name TEXT NOT NULL COLLATE NOCASE, 
-    Document TEXT NOT NULL 
-)", conn);
-                cmd.ExecuteNonQuery ();
-            }
-        }
-
-        private Action<object, string> GetNameSetter (Type t) {
-            var query = from p in t.GetProperties (BindingFlags.Public | BindingFlags.Instance)
-                where
-                    p.Name == "Name" &&
-                    p.CanWrite &&
-                    p.PropertyType == typeof (string)
-                select
-                    p;
-
-            var prop = query.FirstOrDefault ();
-            if (prop == null) {
-                return Nop;
+        private void CheckIndexes<TDocument> ()
+            where TDocument : IDocumentObject {
+            if (_indexesChecked.Contains (typeof (TDocument))) {
+                return;
             }
 
-            return (o, s) => { prop.SetValue (o, s); };
-        }
+            var builder = new IndexDefinitionBuilder<TDocument> {
+                Map = documents =>
+                    documents.Select (d => new {
+                        d.Id,
+                        d.Name
+                    })
+            };
 
-        internal static string GetDbFile (string dbName) {
-            return Path.Combine (EnsureFolder (), String.Format ("{0}.db", dbName));
+            var indexName = $"{typeof (TDocument).Name}/Headers";
+            if (_store.DatabaseCommands.GetIndex (indexName) != null) {
+                return;
+            }
+
+            _store.DatabaseCommands.PutIndex (indexName, builder.ToIndexDefinition (_store.Conventions));
+            _indexesChecked.Add (typeof (TDocument));
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -26,14 +26,31 @@
 
 #endregion
 
-using System.Data.Common;
-using System.Data.Entity.Infrastructure;
-using System.Data.SQLite;
+using System.Linq;
+using Raven.Abstractions.Indexing;
+using Raven.Client.Indexes;
+using Vacuum.Core.Commands;
+using Vacuum.Core.Profiles;
 
 namespace Vacuum.Core.Storage {
-    public class SqliteConnectionFactory : IDbConnectionFactory {
-        public DbConnection CreateConnection (string nameOrConnectionString) {
-            return new SQLiteConnection (nameOrConnectionString);
+    public abstract class DocumentHeadersIndexCreationTask<TDocumentObject> : AbstractIndexCreationTask<TDocumentObject>
+        where TDocumentObject : IDocumentObject {
+        protected DocumentHeadersIndexCreationTask () {
+            Map = headers =>
+                from header in headers
+                select new {
+                    Id = header.Id,
+                    Name = header.Name
+                };
+
+            Store (x => x.Id, FieldStorage.Yes);
+            Store (x => x.Name, FieldStorage.Yes);
         }
+    }
+
+    public class CommandSetByIdAndName : DocumentHeadersIndexCreationTask<CommandSet> {
+    }
+
+    public class ProfileByIdAndName : DocumentHeadersIndexCreationTask<Profile> {
     }
 }

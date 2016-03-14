@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,8 @@
 
 using System;
 using System.Runtime.InteropServices;
+
+// ReSharper disable InconsistentNaming
 
 namespace Vacuum.Core.Windows {
     public struct HARDWAREINPUT {
@@ -94,8 +96,14 @@ namespace Vacuum.Core.Windows {
         XUp = 0x0100
     }
 
+    public delegate bool EnumWindowsProc (IntPtr hWnd, IntPtr lParam);
+
     public class Api {
         [DllImport ("user32.dll")]
         public static extern uint SendInput (uint inputCount, /* [MarshalAs(UnmanagedType.LPArray)] */ INPUT[] inputs, int size);
+
+        [DllImport ("user32.dll")]
+        [return: MarshalAs (UnmanagedType.Bool)]
+        public static extern bool EnumWindows (EnumWindowsProc lpEnumFunc, IntPtr lParam);
     }
 }

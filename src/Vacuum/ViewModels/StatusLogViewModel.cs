@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -26,12 +26,16 @@
 
 #endregion
 
+using System.Linq;
+using System.Windows.Input;
 using Vacuum.Core;
+using Vacuum.Core.Profiles;
 using Vacuum.Core.Speech;
 
 namespace Vacuum.ViewModels {
     public interface IStatusLogViewModel {
         ISpeechService SpeechService { get; }
+        ICommand ToggleSpeech { get; }
     }
 
     internal class StatusLogViewModel : PropertyStateBase, IStatusLogViewModel {
@@ -39,6 +43,20 @@ namespace Vacuum.ViewModels {
             SpeechService = speechService;
         }
 
-        public ISpeechService SpeechService { get; private set; }
+        public ISpeechService SpeechService { get; }
+        public ICommand ToggleSpeech => GetCommand ("ToggleSpeech", ExecuteToggleSpeech, CanExecuteToggleSpeech);
+
+        private void ExecuteToggleSpeech () {
+            if (SpeechService.IsActive) {
+                SpeechService.Stop ();
+            }
+            else {
+                SpeechService.Start ();
+            }
+        }
+
+        private bool CanExecuteToggleSpeech () {
+            return SpeechService.IsReady;
+        }
     }
 }

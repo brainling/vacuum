@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -84,7 +84,7 @@ namespace Vacuum.Core.Controls {
 
         public FontImage () {
             IsEnabledChanged += (o, e) => {
-                if (!Equals(Brush, DisabledBrush)) {
+                if (!Equals (Brush, DisabledBrush)) {
                     Source = CreateGlyph ();
                 }
             };
@@ -94,37 +94,44 @@ namespace Vacuum.Core.Controls {
 
         #region Properties
 
-        public Brush Brush {
+        public Brush Brush
+        {
             get { return (Brush) GetValue (BrushProperty); }
             set { SetValue (BrushProperty, value); }
         }
 
-        public Brush DisabledBrush {
-            get { return (Brush)GetValue (DisabledBrushProperty); }
+        public Brush DisabledBrush
+        {
+            get { return (Brush) GetValue (DisabledBrushProperty); }
             set { SetValue (DisabledBrushProperty, value); }
         }
 
-        public FontFamily FontFamily {
+        public FontFamily FontFamily
+        {
             get { return (FontFamily) GetValue (FontFamilyProperty); }
             set { SetValue (FontFamilyProperty, value); }
         }
 
-        public FontStretch FontStretch {
+        public FontStretch FontStretch
+        {
             get { return (FontStretch) GetValue (FontStretchProperty); }
             set { SetValue (FontStretchProperty, value); }
         }
 
-        public FontStyle FontStyle {
+        public FontStyle FontStyle
+        {
             get { return (FontStyle) GetValue (FontStyleProperty); }
             set { SetValue (FontStyleProperty, value); }
         }
 
-        public FontWeight FontWeight {
+        public FontWeight FontWeight
+        {
             get { return (FontWeight) GetValue (FontWeightProperty); }
             set { SetValue (FontWeightProperty, value); }
         }
 
-        public string Glyph {
+        public string Glyph
+        {
             get { return (string) GetValue (GlyphProperty); }
             set { SetValue (GlyphProperty, value); }
         }

@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,6 @@
 
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -37,7 +36,9 @@ namespace Vacuum.Core.Speech {
     public interface ISpeechService {
         IEnumerable<string> Messages { get; }
         int IncomingVolume { get; }
-        bool IsActive { get; set; }
+        bool IsActive { get; }
+        bool IsReady { get; }
+        void Message (string msg);
         void Start ();
         void Stop ();
         void ResetBindings ();
@@ -45,21 +46,29 @@ namespace Vacuum.Core.Speech {
     }
 
     internal class SpeechService : PropertyStateBase, ISpeechService {
-        private bool _isActive;
         private readonly SpeechRecognitionEngine _engine;
         private readonly Dictionary<string, Grammar> _grammars = new Dictionary<string, Grammar> ();
         private readonly ObservableCollection<string> _messages = new ObservableCollection<string> ();
+        private bool _isActive;
 
         public SpeechService (IDispatchHandler dispatcher) {
+            Message ("Initializing speech service...");
+
             var info = SpeechRecognitionEngine.InstalledRecognizers ().First ();
             _engine = new SpeechRecognitionEngine (info);
             _engine.SetInputToDefaultAudioDevice ();
 
             _engine.AudioLevelUpdated += (o, e) => OnPropertyChanged (() => IncomingVolume);
 
-            _engine.SpeechRecognitionRejected += (o, e) => { dispatcher.Delegate (() => _messages.Add (String.Format ("Unrecognized phrase '{0}'", e.Result.Text))); };
-            _engine.SpeechRecognized += (o, e) => { dispatcher.Delegate (() => _messages.Add (String.Format ("Recognized phrase '{0}' {1}", e.Result.Text, e.Result.Confidence))); };
+            _engine.SpeechRecognitionRejected += (o, e) => { dispatcher.Delegate (() => _messages.Add ($"Unrecognized phrase '{e.Result.Text}'")); };
+            _engine.SpeechRecognized += (o, e) => { dispatcher.Delegate (() => _messages.Add ($"Recognized phrase '{e.Result.Text}' {e.Result.Confidence}")); };
             _engine.RecognizeCompleted += (o, e) => { _isActive = false; };
+        }
+
+        public bool IsReady => _engine.Grammars.Count > 0;
+
+        public void Message (string msg) {
+            _messages.Add (msg);
         }
 
         public void Start () {
@@ -69,6 +78,7 @@ namespace Vacuum.Core.Speech {
 
             IsActive = true;
             _engine.RecognizeAsync (RecognizeMode.Multiple);
+            Message ("Speech recognition active");
         }
 
         public void Stop () {
@@ -77,15 +87,11 @@ namespace Vacuum.Core.Speech {
             }
 
             _engine.RecognizeAsyncCancel ();
+            Message ("Speech recognition stopped");
         }
 
-        public IEnumerable<string> Messages {
-            get { return _messages; }
-        }
-
-        public int IncomingVolume {
-            get { return _engine.AudioLevel; }
-        }
+        public IEnumerable<string> Messages => _messages;
+        public int IncomingVolume => _engine.AudioLevel;
 
         public bool IsActive {
             get { return _isActive; }
@@ -112,6 +118,7 @@ namespace Vacuum.Core.Speech {
             grammar = new Grammar (builder);
             _engine.LoadGrammar (grammar);
             _grammars[set.Name] = grammar;
+            OnPropertyChanged (() => IsReady);
         }
     }
 }

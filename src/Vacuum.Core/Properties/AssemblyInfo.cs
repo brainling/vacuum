@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -80,4 +80,5 @@ using System.Windows.Markup;
 [assembly: XmlnsDefinition ("https://github.com/brainling/vacuum/schemas/2015/vacuum.core", "Vacuum.Core.Controls")]
 [assembly: XmlnsDefinition ("https://github.com/brainling/vacuum/schemas/2015/vacuum.core", "Vacuum.Core.Converters")]
 [assembly: XmlnsDefinition ("https://github.com/brainling/vacuum/schemas/2015/vacuum.core", "Vacuum.Core.Behaviors")]
+[assembly: InternalsVisibleTo ("Vacuum.Spec")]
 [assembly: InternalsVisibleTo ("Vacuum.Core.Spec")]

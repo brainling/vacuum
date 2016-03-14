@@ -8,7 +8,7 @@
     <Window.Resources>
         <core:NullIsHiddenConverter x:Key="NullIsHiddenConverter"></core:NullIsHiddenConverter>
     </Window.Resources>
-    
+
     <StackPanel Orientation="Vertical">
         <ToolBarTray DockPanel.Dock="Top">
             <ToolBar>
@@ -29,7 +29,7 @@
                 <i:Interaction.Behaviors>
                     <core:EditorSourceBinding Source="{Binding SelectedCommand.Script}" />
                 </i:Interaction.Behaviors>
-                </avalonEdit:TextEditor>
+            </avalonEdit:TextEditor>
         </StackPanel>
     </StackPanel>
 </Window>

@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -50,18 +50,13 @@ namespace Vacuum.ViewModels {
             Prompt = prompt;
         }
 
+        public ICommand Save => GetCommand ("Save", ExecuteSave);
+        public ICommand Cancel => GetCommand ("Cancel", ExecuteCancel);
+
         public IQuickInputView View { get; set; }
 
-        public ICommand Save {
-            get { return GetCommand ("Save", ExecuteSave); }
-        }
-
-        public ICommand Cancel {
-            get { return GetCommand ("Cancel", ExecuteCancel); }
-        }
-
-        public string Title { get; private set; }
-        public string Prompt { get; private set; }
+        public string Title { get; }
+        public string Prompt { get; }
 
         public string Value {
             get { return _value; }

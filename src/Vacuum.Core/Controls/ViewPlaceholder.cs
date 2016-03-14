@@ -1,6 +1,6 @@
 ﻿#region License
 
-// Copyright (c) 2011, Matt Holmes
+// Copyright (c) 2015, Matt Holmes
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -35,17 +35,17 @@ namespace Vacuum.Core.Controls {
         public static readonly DependencyProperty ViewTypeProperty = DependencyProperty.Register (
             "ViewType", typeof (Type), typeof (ViewPlaceholder), new PropertyMetadata (default(Type)));
 
-        public Type ViewType {
-            get { return (Type) GetValue (ViewTypeProperty); }
-            set { SetValue (ViewTypeProperty, value); }
-        }
-
         public ViewPlaceholder () {
             Initialized += (o, e) => {
                 if (ViewType != null) {
-                    Content = ((VoiceApplication) Application.Current).Container.GetInstance (ViewType);
+                    Content = VoiceApplication.CurrentContainer.GetInstance (ViewType);
                 }
             };
+        }
+
+        public Type ViewType {
+            get { return (Type) GetValue (ViewTypeProperty); }
+            set { SetValue (ViewTypeProperty, value); }
         }
     }
 }
