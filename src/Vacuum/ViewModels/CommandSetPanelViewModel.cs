@@ -28,10 +28,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mime;
 using System.Windows;
 using System.Windows.Input;
-using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Win32;
@@ -39,12 +37,11 @@ using Vacuum.Core;
 using Vacuum.Core.Commands;
 using Vacuum.Core.Profiles;
 using Vacuum.Core.Storage;
-using Vacuum.Views;
 
 namespace Vacuum.ViewModels {
     public class CommandSetSelection : BindableBase {
-        private Profile _profile;
         private readonly IProfileService _profileService;
+        private Profile _profile;
 
         public CommandSetSelection (DocumentHeader commandSet, Profile profile, IProfileService profileService) {
             Id = commandSet.Id;
@@ -91,6 +88,9 @@ namespace Vacuum.ViewModels {
         }
     }
 
+    public interface ICommandSetPanelView {
+    }
+
     public interface ICommandSetPanelViewModel {
         ICommand NewCommandSet { get; }
         ICommand EditCommandSet { get; }
@@ -98,10 +98,10 @@ namespace Vacuum.ViewModels {
     }
 
     public class CommandSetPanelViewModel : PropertyStateBase, ICommandSetPanelViewModel {
-        private CommandSetSelection _selectedCommandSet;
         private readonly ICommandService _commandService;
         private readonly List<CommandSetSelection> _commandSets = new List<CommandSetSelection> ();
         private readonly IProfileService _profileService;
+        private CommandSetSelection _selectedCommandSet;
 
         public CommandSetPanelViewModel (IProfileService profileService, ICommandService commandService, IEventAggregator eventAggregator) {
             _profileService = profileService;
@@ -115,15 +115,16 @@ namespace Vacuum.ViewModels {
 
         public ICommand ImportCommandSet => GetCommand ("Import", ExecuteImportCommandSet);
         public ICommand ExportCommandSet => GetCommand ("Export", ExecuteExportCommandSet, CanExecuteExportCommandSet);
-        public ICommand NewCommandSet => GetCommand("New", ExecuteNewCommandSet, CanExecuteExportCommandSet);
-        public ICommand EditCommandSet => GetCommand ("Edit", ExecuteEditCommandSet, CanExecuteEditCommandSet);
 
         public CommandSetSelection SelectedCommandSet {
             get { return _selectedCommandSet; }
             set { SetProperty (ref _selectedCommandSet, value); }
-        }        
+        }
 
-        public IEnumerable<CommandSetSelection> CommandSets => _commandSets;        
+        public ICommand NewCommandSet => GetCommand ("New", ExecuteNewCommandSet, CanExecuteExportCommandSet);
+        public ICommand EditCommandSet => GetCommand ("Edit", ExecuteEditCommandSet, CanExecuteEditCommandSet);
+
+        public IEnumerable<CommandSetSelection> CommandSets => _commandSets;
 
         private bool CanExecuteExportCommandSet () {
             return SelectedCommandSet != null;
@@ -138,9 +139,8 @@ namespace Vacuum.ViewModels {
 
         private void ExecuteEditCommandSet () {
             var set = _commandService.Load (SelectedCommandSet.Id);
-            var editor = ((VoiceApplication) Application.Current).Container.GetInstance<CommandSet, CommandSetEditorView> (set);
-            editor.Owner = Application.Current.MainWindow;
-            editor.Show ();
+            var editor = ((VoiceApplication) Application.Current).Container.GetInstance<CommandSet, ICommandSetEditorView> (set);
+            editor.Edit ();
         }
 
         private void ExecuteImportCommandSet () {

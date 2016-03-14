@@ -33,6 +33,10 @@ using Vacuum.Core.Profiles;
 using Vacuum.Core.Speech;
 
 namespace Vacuum.ViewModels {
+    public interface IStatusLogView {
+        
+    }
+
     public interface IStatusLogViewModel {
         ISpeechService SpeechService { get; }
         ICommand ToggleSpeech { get; }

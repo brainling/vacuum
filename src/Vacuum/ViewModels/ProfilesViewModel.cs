@@ -38,6 +38,10 @@ using Vacuum.Core.Profiles;
 using Vacuum.Views;
 
 namespace Vacuum.ViewModels {
+    public interface IProfilesView {
+        
+    }
+
     public interface IProfilesViewModel {
         IProfileService ProfileService { get; }
         ICommand EditProfile { get; }
@@ -102,10 +106,8 @@ namespace Vacuum.ViewModels {
         }
 
         private void ShowEditDialog (Profile profile) {
-            var editor = _container.GetInstance<Profile, EditProfileView> (profile);
-            editor.Owner = Application.Current.MainWindow;
-            editor.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            editor.ShowDialog ();
+            var editor = _container.GetInstance<Profile, IEditProfileView> (profile);
+            editor.Edit ();
         }
     }
 }

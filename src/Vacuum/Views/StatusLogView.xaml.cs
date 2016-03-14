@@ -33,7 +33,7 @@ namespace Vacuum.Views {
     /// <summary>
     /// Interaction logic for StatusLogView.xaml
     /// </summary>
-    public partial class StatusLogView : UserControl {
+    public partial class StatusLogView : UserControl, IStatusLogView {
         public StatusLogView (IStatusLogViewModel vm) {
             DataContext = vm;
             InitializeComponent ();

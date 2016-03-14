@@ -46,13 +46,13 @@ namespace Vacuum {
             serviceRegistry.Register<IOptionsView, OptionsView> (new PerContainerLifetime ());
 
             serviceRegistry.Register<IProfilesViewModel, ProfilesViewModel> (new PerContainerLifetime ());
-            serviceRegistry.Register<ProfilesView> (new PerContainerLifetime ());
+            serviceRegistry.Register<IProfilesView, ProfilesView> (new PerContainerLifetime ());
 
             serviceRegistry.Register<ICommandSetPanelViewModel, CommandSetPanelViewModel> (new PerContainerLifetime ());
-            serviceRegistry.Register<CommandSetPanelView> (new PerContainerLifetime ());
+            serviceRegistry.Register<ICommandSetPanelView, CommandSetPanelView> (new PerContainerLifetime ());
 
             serviceRegistry.Register<IStatusLogViewModel, StatusLogViewModel> (new PerContainerLifetime ());
-            serviceRegistry.Register<StatusLogView> (new PerContainerLifetime ());
+            serviceRegistry.Register<IStatusLogView, StatusLogView> (new PerContainerLifetime ());
 
             #endregion
 
@@ -60,17 +60,17 @@ namespace Vacuum {
 
             serviceRegistry.Register<CommandSet, ICommandSetEditorViewModel> ((f, c) =>
                 new CommandSetEditorViewModel (c, f.GetInstance<IOptionsService> (), f.GetInstance<IEventAggregator> (), f.GetInstance<IServiceContainer> ()));
-            serviceRegistry.Register<CommandSet, CommandSetEditorView> ((f, c) =>
+            serviceRegistry.Register<CommandSet, ICommandSetEditorView> ((f, c) =>
                 new CommandSetEditorView (f.GetInstance<CommandSet, ICommandSetEditorViewModel> (c)));
 
             serviceRegistry.Register<Command, IEditCommandViewModel> ((f, c) => new EditCommandViewModel (c));
-            serviceRegistry.Register<Command, EditCommandView> ((f, c) => new EditCommandView (f.GetInstance<Command, IEditCommandViewModel> (c)));
+            serviceRegistry.Register<Command, IEditCommandView> ((f, c) => new EditCommandView (f.GetInstance<Command, IEditCommandViewModel> (c)));
 
             serviceRegistry.Register<Profile, IEditProfileViewModel> ((f, p) => new EditProfileViewModel (p, f.GetInstance<IProfileService> ()));
-            serviceRegistry.Register<Profile, EditProfileView> ((f, p) => new EditProfileView (f.GetInstance<Profile, IEditProfileViewModel> (p)));
+            serviceRegistry.Register<Profile, IEditProfileView> ((f, p) => new EditProfileView (f.GetInstance<Profile, IEditProfileViewModel> (p)));
 
             serviceRegistry.Register<string, string, IQuickInputViewModel> ((f, t, p) => new QuickInputViewModel (t, p));
-            serviceRegistry.Register<string, string, QuickInputView> ((f, t, p) =>
+            serviceRegistry.Register<string, string, IQuickInputView> ((f, t, p) =>
                 new QuickInputView (f.GetInstance<string, string, IQuickInputViewModel> (t, p)));
 
             #endregion

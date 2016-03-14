@@ -40,6 +40,12 @@ namespace Vacuum.Views {
             InitializeComponent ();
         }
 
+        public void Edit () {
+            Owner = Application.Current.MainWindow;
+            WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            ShowDialog ();
+        }
+
         public void Ok () {
             DialogResult = true;
             Close ();

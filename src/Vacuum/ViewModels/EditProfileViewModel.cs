@@ -33,6 +33,7 @@ using Vacuum.Core.Profiles;
 
 namespace Vacuum.ViewModels {
     public interface IEditProfileView {
+        void Edit ();
         void Ok ();
         void Cancel ();
     }

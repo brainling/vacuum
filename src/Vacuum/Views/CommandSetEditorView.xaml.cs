@@ -55,5 +55,10 @@ namespace Vacuum.Views {
             ScriptEditor.Options.EnableEmailHyperlinks = ScriptEditor.Options.EnableHyperlinks = options.EnableHyperLinks;
             ScriptEditor.Options.EnableVirtualSpace = options.EnableVirtualSpace;
         }
+
+        public void Edit () {
+            Owner = Application.Current.MainWindow;
+            Show ();
+        }
     }
 }

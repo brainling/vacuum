@@ -33,7 +33,7 @@ namespace Vacuum.Views {
     /// <summary>
     /// Interaction logic for ProfilesView.xaml
     /// </summary>
-    public partial class ProfilesView : UserControl {
+    public partial class ProfilesView : UserControl, IProfilesView {
         public ProfilesView (IProfilesViewModel vm) {
             DataContext = vm;
             InitializeComponent ();

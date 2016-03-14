@@ -45,9 +45,7 @@ namespace Vacuum.Views {
             };
         }
 
-        public string Value {
-            get { return ((IQuickInputViewModel) DataContext).Value; }
-        }
+        private string Value => ((IQuickInputViewModel) DataContext).Value;
 
         public void Ok () {
             DialogResult = true;
@@ -57,6 +55,18 @@ namespace Vacuum.Views {
         public void Cancel () {
             DialogResult = false;
             Close ();
+        }
+
+        public bool Get (out string val) {
+            val = null;
+
+            var result = ShowDialog ();
+            if (!result.HasValue || !result.Value) {
+                return false;
+            }
+
+            val = Value;
+            return true;
         }
     }
 }

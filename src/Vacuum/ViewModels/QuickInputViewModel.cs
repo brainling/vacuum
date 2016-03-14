@@ -33,6 +33,7 @@ namespace Vacuum.ViewModels {
     public interface IQuickInputView {
         void Ok ();
         void Cancel ();
+        bool Get (out string val);
     }
 
     public interface IQuickInputViewModel {

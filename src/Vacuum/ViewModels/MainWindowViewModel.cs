@@ -121,7 +121,7 @@ namespace Vacuum.ViewModels {
         }
 
         private void ExecuteEditProfiles () {
-            _flyoutService.ShowFlyout ("Profiles", _container.GetInstance<ProfilesView> ());
+            _flyoutService.ShowFlyout ("Profiles", (FrameworkElement) _container.GetInstance<IProfilesView> ());
         }
     }
 }

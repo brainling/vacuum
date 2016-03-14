@@ -30,11 +30,6 @@ using System.Windows;
 using Vacuum.ViewModels;
 
 namespace Vacuum.Views {
-    public interface IEditCommandView {
-        void SetOwner (ICommandSetEditorView owner);
-        bool? ShowDialog ();
-    }
-
     public partial class EditCommandView : Window, IEditCommandView {
         public EditCommandView (IEditCommandViewModel vm) {
             DataContext = vm;

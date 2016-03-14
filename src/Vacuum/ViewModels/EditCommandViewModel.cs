@@ -31,9 +31,13 @@ using System.Linq;
 using System.Windows.Input;
 using Vacuum.Core;
 using Vacuum.Core.Commands;
-using Vacuum.Views;
 
 namespace Vacuum.ViewModels {
+    public interface IEditCommandView {
+        void SetOwner (ICommandSetEditorView owner);
+        bool? ShowDialog ();
+    }
+
     public interface IEditCommandViewModel {
     }
 
@@ -63,11 +67,12 @@ namespace Vacuum.ViewModels {
         }
 
         private void ExecuteAddPhrase () {
-            var input = VoiceApplication.CurrentContainer.GetInstance<string, string, QuickInputView> ("Add Phrases",
+            var input = VoiceApplication.CurrentContainer.GetInstance<string, string, IQuickInputView> ("Add Phrases",
                 "Enter a phrase or a set of phrases seperated by a semi-colonn:");
-            var result = input.ShowDialog ();
-            if (result.HasValue && result.Value) {
-                AddPhrases (input.Value);
+
+            string phrases;
+            if (input.Get (out phrases)) {
+                AddPhrases (phrases);
             }
         }
 

@@ -43,6 +43,7 @@ using Vacuum.Views;
 namespace Vacuum.ViewModels {
     public interface ICommandSetEditorView {
         void SetEditorOptions (ScriptEditorOptions options);
+        void Edit ();
     }
 
     public interface ICommandSetEditorViewModel {

@@ -33,7 +33,7 @@ namespace Vacuum.Views {
     /// <summary>
     /// Interaction logic for CommandSetPanelView.xaml
     /// </summary>
-    public partial class CommandSetPanelView : UserControl {
+    public partial class CommandSetPanelView : UserControl, ICommandSetPanelView {
         public CommandSetPanelView (ICommandSetPanelViewModel vm) {
             DataContext = vm;
             InitializeComponent ();

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"        
         xmlns:core="https://github.com/brainling/vacuum/schemas/2015/vacuum.core"
         xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-        xmlns:local="clr-namespace:Vacuum.Views"
+        xmlns:local="clr-namespace:Vacuum.ViewModels"
         Title="{Binding Title}" Height="500" Width="825" SaveWindowPosition="True" RightWindowCommandsOverlayBehavior="Never">
     <mah:MetroWindow.RightWindowCommands>
         <mah:WindowCommands>
@@ -44,9 +44,9 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <core:ViewPlaceholder ViewType="{x:Type local:CommandSetPanelView}" />
+            <core:ViewPlaceholder ViewType="{x:Type local:ICommandSetPanelView}" />
             <GridSplitter Grid.Column="1" Width="3" HorizontalAlignment="Stretch" />
-            <core:ViewPlaceholder Grid.Column="2" ViewType="{x:Type local:StatusLogView}" />
+            <core:ViewPlaceholder Grid.Column="2" ViewType="{x:Type local:IStatusLogView}" />
         </Grid>
     </DockPanel>
 </mah:MetroWindow>
